@@ -1,4 +1,4 @@
-﻿namespace JCystems.GettingStarted.Connectors.Contexts
+namespace JCystems.GettingStarted.Connectors.Contexts
 {
     using JCystems.GettingStarted.Connectors.Entities;
     using Microsoft.EntityFrameworkCore;

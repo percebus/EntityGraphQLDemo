@@ -1,0 +1,29 @@
+﻿namespace JCystems.GettingStarted.Controllers
+{
+    using EntityGraphQL;
+    using EntityGraphQL.Schema;
+    using JCystems.GettingStarted.Connectors.Contexts;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.Mvc;
+
+    [Route("graphql")]
+    public class QueryController : Controller
+    {
+        private readonly DemoContext DbContext;
+        private readonly SchemaProvider<DemoContext> SchemaProvider;
+
+        public QueryController(DemoContext dbContext, SchemaProvider<DemoContext> schemaProvider)
+        {
+            this.DbContext = dbContext;
+            this.SchemaProvider = schemaProvider;
+        }
+
+        [HttpPost]
+        public async Task<object> Post([FromBody] QueryRequest query)
+        {
+            var results = await this.SchemaProvider.ExecuteRequestWithContextAsync(query, DbContext, HttpContext.RequestServices, null);
+            // gql compile errors show up in results.Errors
+            return results;
+        }
+    }
+}

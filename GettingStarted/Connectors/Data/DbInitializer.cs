@@ -11,18 +11,18 @@
         {
             context.Database.EnsureCreated();
 
-            if (context.Movies.Any())
+            if (context.People.Any())
             {
                 return; // DB has been seeded
             }
 
-            var movies = new Movie[]
+            var people = new Person[]
             {
             };
 
-            foreach (Movie movie in movies)
+            foreach (Person person in people)
             {
-                context.Movies.Add(movie);
+                context.People.Add(person);
             }
 
             context.SaveChanges();

@@ -1,0 +1,7 @@
+﻿POST HTTP://localhost:5000/graphql
+Content-Type: application/json
+
+{
+  "query": "{ movies { id name } }",
+  "variables": null
+}

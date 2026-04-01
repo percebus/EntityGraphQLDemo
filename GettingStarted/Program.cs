@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using EntityGraphQL.AspNet;
 using JCystems.GettingStarted.Connectors.Contexts;
 using JCystems.GettingStarted.Connectors.Data;
@@ -29,27 +31,41 @@ public partial class Program
         ServiceOptions config;
         config = provider.GetRequiredService<IOptionsMonitor<ServiceOptions>>().CurrentValue;
 
-        builder
-            .AddGraphQL()
-            .AddTypes(Array.Empty<Type>());
-
         builder.Services
             .AddDbContext<DemoContext>(options => options.UseSqlServer(config.Database.ReadConnectionString))
-            .AddGraphQLSchema<DemoContext>();
+            .AddGraphQLSchema<DemoContext>()
+        //.AddControllers()
+        //.AddJsonOptions(opts =>
+        //{
+        //    var converter = new JsonStringEnumConverter();
+        //    // Use enum field names instead of numbers
+        //    opts.JsonSerializerOptions.Converters.Add(converter);
+        //    // EntityGraphQL internally builds types with fields
+        //    opts.JsonSerializerOptions.IncludeFields = true;
+        //    // The fields internally built already are named with fieldNamer (defaults to camelCase). This is
+        //    // for the properties on QueryResult (Data, Errors) to match what most tools etc expect (camelCase)
+        //    opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        //})
+        ;
 
         var app = builder.Build();
         CreateDbIfNotExists(app.Services);
 
-        app.MapGraphQL<DemoContext>(followSpec: true);
 
-        app
-            .UseRouting()
-            .UseEndpoints(endpoints =>
+        app.UseRouting();
+
+        // app.MapGraphQL<DemoContext>(followSpec: true);
+        app.UseEndpoints(endpoints =>
+        {
+            // defaults to /graphql endpoint
+            endpoints.MapGraphQL<DemoContext>(configureEndpoint: (endpoint) =>
             {
-                endpoints.MapGraphQL();
+                // endpoint.RequireAuthorization("authorized");
+                // do other things with endpoint
             });
+        });
 
-        app.RunWithGraphQLCommands(args);
+        app.Run();
     }
 
     private static void CreateDbIfNotExists(IServiceProvider services)

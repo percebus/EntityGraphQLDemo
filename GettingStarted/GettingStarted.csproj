@@ -5,24 +5,19 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>preview</LangVersion>
-    <AssemblyName>JCystems.$(MSBuildProjectName)</AssemblyName>
+    <AssemblyName>$(MSBuildProjectName)</AssemblyName>
     <Product>EntityGraphQLDemo</Product>
     <Authors>percebus</Authors>
     <Company>JCystems</Company>
+    <RootNamespace>JCystems.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(ImplicitUsings)' == 'enable'">
-    <Using Include="GettingStarted" />
+    <Using Include="JCystems.GettingStarted" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="EntityGraphQL.AspNet" Version="5.7.1" />
-    <PackageReference Include="HotChocolate.AspNetCore" Version="15.1.12" />
-    <PackageReference Include="HotChocolate.AspNetCore.CommandLine" Version="15.1.12" />
-    <PackageReference Include="HotChocolate.Types.Analyzers" Version="15.1.12">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
