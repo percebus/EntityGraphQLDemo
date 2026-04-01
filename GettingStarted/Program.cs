@@ -34,7 +34,7 @@ public partial class Program
         builder.Services
             .AddDbContext<DemoContext>(options => options.UseSqlServer(config.Database.ReadConnectionString))
             .AddGraphQLSchema<DemoContext>()
-        //.AddControllers()
+        //.AddControllers() // Option C: Custom controllers
         //.AddJsonOptions(opts =>
         //{
         //    var converter = new JsonStringEnumConverter();
@@ -51,19 +51,21 @@ public partial class Program
         var app = builder.Build();
         CreateDbIfNotExists(app.Services);
 
-
         app.UseRouting();
 
-        // app.MapGraphQL<DemoContext>(followSpec: true);
-        app.UseEndpoints(endpoints =>
-        {
-            // defaults to /graphql endpoint
-            endpoints.MapGraphQL<DemoContext>(configureEndpoint: (endpoint) =>
-            {
-                // endpoint.RequireAuthorization("authorized");
-                // do other things with endpoint
-            });
-        });
+        // Option A
+        app.MapGraphQL<DemoContext>(followSpec: true);
+
+        // Option B
+        //app.UseEndpoints(endpoints =>
+        //{
+        //    // defaults to /graphql endpoint
+        //    endpoints.MapGraphQL<DemoContext>(configureEndpoint: (endpoint) =>
+        //    {
+        //        // endpoint.RequireAuthorization("authorized");
+        //        // do other things with endpoint
+        //    });
+        //});
 
         app.Run();
     }
@@ -73,16 +75,9 @@ public partial class Program
         using (var scope = services.CreateScope())
         {
             var scopedServices = scope.ServiceProvider;
-            try
-            {
-                var context = scopedServices.GetRequiredService<DemoContext>();
-                DbInitializer.Initialize(context);
-            }
-            catch (Exception ex)
-            {
-                var logger = scopedServices.GetRequiredService<ILogger<Program>>();
-                logger.LogError(ex, "An error occurred creating the DB.");
-            }
+
+            var context = scopedServices.GetRequiredService<DemoContext>();
+            DbInitializer.Initialize(context);
         }
     }
 }

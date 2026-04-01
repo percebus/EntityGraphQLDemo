@@ -6,8 +6,9 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
 
+    [ApiController]
     [Route("graphql")]
-    public class QueryController : Controller
+    public class QueryController : ControllerBase
     {
         private readonly DemoContext DbContext;
         private readonly SchemaProvider<DemoContext> SchemaProvider;

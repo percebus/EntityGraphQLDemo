@@ -1,7 +1,10 @@
 ﻿namespace JCystems.GettingStarted.Connectors.Entities
 {
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public class Movie
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public uint Id { get; set; }
         public string Name { get; set; }
         public Genre Genre { get; set; }

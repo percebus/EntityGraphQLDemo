@@ -1,7 +1,10 @@
 ﻿namespace JCystems.GettingStarted.Connectors.Entities
 {
+    using System.ComponentModel.DataAnnotations.Schema;
+
     public class Person
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public uint Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
