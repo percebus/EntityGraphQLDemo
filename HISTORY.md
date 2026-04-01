@@ -1,14 +1,10 @@
 # HISTORY
 
-## Scaffold project
-
- Created an `AspNet` w/ APIs using Visual Studio Enterprise
-
  ## Packages
 
+ 1. `HotChocolate.AspNet`: [Getting Started](https://chillicream.com/docs/hotchocolate/v15/get-started-with-graphql-in-net-core)
+ 1. `EntityFrameworkCore`
  1. `EntityGraphQL`
- 1. `EntityFramework.SqlServer`
- 1. `HotChocolate.AspNet`
  
  ## Application
 

@@ -1,4 +1,4 @@
-﻿namespace EntityGraphQLDemo.Connectors.Entities
+﻿namespace JCystems.GettingStarted.Connectors.Entities
 {
     public class Person
     {

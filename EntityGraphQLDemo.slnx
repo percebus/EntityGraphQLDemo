@@ -5,5 +5,5 @@
     <File Path="LICENSE" />
     <File Path="README.md" />
   </Folder>
-  <Project Path="EntityGraphQLDemo.csproj" />
+  <Project Path="GettingStarted/GettingStarted.csproj" />
 </Solution>

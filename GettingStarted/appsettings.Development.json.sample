@@ -1,0 +1,14 @@
+{
+  "EntityGraphQLDemo": {
+    "Database": {
+      "ReadConnectionString": "Server=localhost;Database=EntityGraphQLDemo;Trusted_Connection=True;MultipleActiveResultSets=true",
+      "WriteConnectionString": "Server=localhost;Database=EntityGraphQLDemo;Trusted_Connection=True;MultipleActiveResultSets=true"
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-﻿namespace EntityGraphQLDemo.Connectors.Entities
+﻿namespace JCystems.GettingStarted.Connectors.Entities
 {
     public class Movie
     {
@@ -12,7 +12,4 @@
         public uint? DirectorId { get; set; }
         public double Rating { get; internal set; }
     }
-
-
-
 }
