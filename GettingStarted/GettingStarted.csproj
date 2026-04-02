@@ -17,10 +17,32 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="GraphQLSchema.cs" />
+    <Compile Remove="Program - Copy.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Connectors\Data\DbInitializer.cs.FIXME" />
+    <None Remove="Connectors\Data\SeedData.cs.FIXME" />
+    <None Remove="Controllers\QueryController.cs.FIXME" />
+    <None Remove="GraphQLSchema.cs.FIXME" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EntityFrameworkCore.Projectables" Version="6.0.1" />
     <PackageReference Include="EntityGraphQL.AspNet" Version="5.7.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="REST\.well-known\graphql\schema\GET.http" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
   </ItemGroup>
 
 </Project>
