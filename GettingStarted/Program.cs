@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -57,11 +58,6 @@ public partial class Program
             })
             .AddGraphQLValidator() // Add validation support for mutations
             .AddSingleton<AgeService>() // Add services that will be injected into GraphQL fields
-
-            // >>> WARNING <<< This thing breaks
-            // "Cannot find 'Movies' in 'Query'
-            // .AddTransient<SchemaProvider<DemoContext>>()
-
             .AddControllers() // Option C: Custom controllers
                 .AddJsonOptions(oJsonOptions =>
                 {
@@ -90,6 +86,14 @@ public partial class Program
             app.MapOpenApi();
         }
 
+        ConfigureUsingTopRoute(app);
+        // ConfigureUsingEndpoints(app);
+
+        app.Run();
+    }
+
+    private static void ConfigureUsingTopRoute(WebApplication app)
+    {
         // Option A
         app.MapControllers();
         app.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
@@ -113,34 +117,34 @@ public partial class Program
 
             IncludeQueryInfo = true, // Include query execution metadata
         });
+    }
 
-        // Option B
-        //        app.UseEndpoints(endpoints =>
-        //        {
-        //            endpoints.MapControllers();
-        //            endpoints.MapGraphQL<DemoContext>(
-        //                oOpenApiOptions: new ExecutionOptions
-        //                {
-        //                    BeforeRootFieldExpressionBuild = (exp, op, field) =>
-        //                    {
-        //                        if (exp.Type.IsGenericTypeQueryable())
-        //                            return Expression.Call(
-        //                                typeof(EntityFrameworkQueryableExtensions),
-        //                                nameof(EntityFrameworkQueryableExtensions.TagWith),
-        //                                [exp.Type.GetGenericArguments()[0]],
-        //                                exp,
-        //                                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
-        //                            );
-        //                        return exp;
-        //                    },
-        //#if DEBUG
-        //                    // IncludeDebugInfo = true
-        //#endif
-        //                }
-        //            );
-        //        });
-
-        app.Run();
+    [SuppressMessage("Usage", "ASP0014:Suggest using top level route registrations")]
+    private static void ConfigureUsingEndpoints(WebApplication app)
+    {
+        // NOTE: "Suggest Using top level route registrations instead of `UseEndpoints`
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
+            {
+                BeforeRootFieldExpressionBuild = (exp, op, field) =>
+                {
+                    if (exp.Type.IsGenericTypeQueryable())
+                        return Expression.Call(
+                            typeof(EntityFrameworkQueryableExtensions),
+                            nameof(EntityFrameworkQueryableExtensions.TagWith),
+                            [exp.Type.GetGenericArguments()[0]],
+                            exp,
+                            Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
+                        );
+                    return exp;
+                }
+#if DEBUG
+                //IncludeDebugInfo = true
+#endif
+            });
+        });
     }
 
     private static void CreateDbIfNotExists(IServiceProvider services)
