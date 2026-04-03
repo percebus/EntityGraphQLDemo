@@ -1,7 +1,7 @@
 
 tmp/
 
-appsettings.Developer.json
+appsettings.Development.json
 appsettings.env.json
 
 
