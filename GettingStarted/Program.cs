@@ -7,6 +7,7 @@ using EntityGraphQL.Schema;
 using JCystems.GettingStarted.Connectors.Contexts;
 using JCystems.GettingStarted.Connectors.Data;
 using JCystems.GettingStarted.Connectors.Services;
+using JCystems.GettingStarted.GraphQL;
 using JCystems.GettingStarted.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -41,14 +42,25 @@ public partial class Program
                 // Specify the OpenAPI version to use
                 options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
             })
-            .AddDbContext<DemoContext>(options => options.UseSqlServer(config.Database.ReadConnectionString))
-            .AddGraphQLSchema<DemoContext>()
+            .AddDbContext<DemoContext>(oAddDbContext => oAddDbContext.UseSqlServer(config.Database.ReadConnectionString))
+            .AddGraphQLSchema<DemoContext>(oAddGraphQLOptions =>
+            {
+                oAddGraphQLOptions.PreBuildSchemaFromContext = schema =>
+                {
+                    // add in needed mappings for our context
+                    schema.AddScalarType<KeyValuePair<string, string>>("StringKeyValuePair", "Represents a pair of strings");
+                };
+
+                oAddGraphQLOptions.ConfigureSchema = GraphQLOptions.ConfigureSchema;
+                // below this will generate the field names as they are from the reflected dotnet types - i.e matching the case
+                // builder.FieldNamer = name => name;
+            })
             .AddGraphQLValidator() // Add validation support for mutations
             .AddSingleton<AgeService>() // Add services that will be injected into GraphQL fields
 
             // >>> WARNING <<< This thing breaks
             // "Cannot find 'Movies' in 'Query'
-            // .AddSingleton<SchemaProvider<DemoContext>>() // FIXME
+            // .AddTransient<SchemaProvider<DemoContext>>()
 
             .AddControllers() // Option C: Custom controllers
                 .AddJsonOptions(opts =>
@@ -77,38 +89,53 @@ public partial class Program
         }
 
         // Option A
-        app.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
-        {
-            // Add EF Core query tags for debugging
-            BeforeRootFieldExpressionBuild = (exp, op, field) =>
-            {
-                if (exp.Type.IsGenericTypeQueryable())
-                    return Expression.Call(
-                        typeof(EntityFrameworkQueryableExtensions),
-                        nameof(EntityFrameworkQueryableExtensions.TagWith),
-                        [exp.Type.GetGenericArguments()[0]],
-                        exp,
-                        Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
-                    );
-                return exp;
-            },
+        //app.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
+        //{
+        //    // Add EF Core query tags for debugging
+        //    BeforeRootFieldExpressionBuild = (exp, op, field) =>
+        //    {
+        //        if (exp.Type.IsGenericTypeQueryable())
+        //            return Expression.Call(
+        //                typeof(EntityFrameworkQueryableExtensions),
+        //                nameof(EntityFrameworkQueryableExtensions.TagWith),
+        //                [exp.Type.GetGenericArguments()[0]],
+        //                exp,
+        //                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
+        //            );
+        //        return exp;
+        //    },
 
-            // TODO? master
-            // IncludeDebugInfo = true,
+        //    // TODO? master
+        //    // IncludeDebugInfo = true,
 
-            IncludeQueryInfo = true, // Include query execution metadata
-        });
+        //    IncludeQueryInfo = true, // Include query execution metadata
+        //});
 
         // Option B
-        //app.UseEndpoints(endpoints =>
-        //{
-        //    // defaults to /graphql endpoint
-        //    endpoints.MapGraphQL<DemoContext>(configureEndpoint: (endpoint) =>
-        //    {
-        //        // endpoint.RequireAuthorization("authorized");
-        //        // do other things with endpoint
-        //    });
-        //});
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapControllers();
+            endpoints.MapGraphQL<DemoContext>(
+                options: new ExecutionOptions
+                {
+                    BeforeRootFieldExpressionBuild = (exp, op, field) =>
+                    {
+                        if (exp.Type.IsGenericTypeQueryable())
+                            return Expression.Call(
+                                typeof(EntityFrameworkQueryableExtensions),
+                                nameof(EntityFrameworkQueryableExtensions.TagWith),
+                                [exp.Type.GetGenericArguments()[0]],
+                                exp,
+                                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
+                            );
+                        return exp;
+                    },
+#if DEBUG
+                    // IncludeDebugInfo = true
+#endif
+                }
+            );
+        });
 
         app.Run();
     }

@@ -1,0 +1,101 @@
+schema {
+	query: Query
+}
+
+"""Boolean scalar"""
+scalar Boolean
+"""Char scalar"""
+scalar Char
+"""Date with time scalar"""
+scalar Date
+"""Date value only scalar"""
+scalar DateOnly
+"""DateTimeOffset scalar"""
+scalar DateTimeOffset
+"""Float scalar"""
+scalar Float
+"""ID scalar"""
+scalar ID
+"""Int scalar"""
+scalar Int
+"""String scalar"""
+scalar String
+"""Represents a pair of strings"""
+scalar StringKeyValuePair
+"""Time value only scalar"""
+scalar TimeOnly
+
+"""Directs the executor to include this field or fragment only when the `if` argument is true."""
+directive @include(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+"""Directs the executor to skip this field or fragment when the `if` argument is true."""
+directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+enum Genre {
+	Action
+	Comedy
+	Drama
+	Horror
+	Scifi
+}
+
+type Query {
+	"""Return a Actor by its Id"""
+	actor(id: Int!): Actor
+	actors: [Actor!]!
+	"""Return a Movie by its Id"""
+	movie(id: Int!): Movie
+	movies: [Movie!]!
+	people: [Person!]!
+	"""Return a Person by its Id"""
+	person(id: Int!): Person
+	"""Return a Writer by its Id"""
+	writer(id: Int!): Writer
+	writers: [Writer!]!
+}
+
+type Actor {
+	id: Int!
+	movie: Movie!
+	movieId: Int!
+	person: Person!
+	personId: Int!
+}
+
+type Movie {
+	"""Return a Actor by its Id"""
+	actor(id: Int!): Actor
+	actors: [Actor!]!
+	director: Person!
+	directorId: Int
+	genre: Genre!
+	id: Int!
+	name: String!
+	rating: Float!
+	released: Date!
+	"""Return a Writer by its Id"""
+	writer(id: Int!): Writer
+	writers: [Writer!]!
+}
+
+type Person {
+	actorIn: [Actor!]!
+	died: Date
+	directorOf: [Movie!]!
+	dob: Date!
+	firstName: String!
+	id: Int!
+	isDeleted: Boolean!
+	lastName: String!
+	writerOf: [Writer!]!
+	"""Return a Writer by its Id"""
+	writerOfById(id: Int!): Writer
+}
+
+type Writer {
+	id: Int!
+	movie: Movie!
+	movieId: Int!
+	person: Person!
+	personId: Int!
+}
+
