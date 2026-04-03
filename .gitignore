@@ -1,3 +1,6 @@
+
+tmp/
+
 appsettings.Developer.json
 appsettings.env.json
 
