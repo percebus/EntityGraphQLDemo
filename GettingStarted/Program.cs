@@ -37,10 +37,10 @@ public partial class Program
         config = provider.GetRequiredService<IOptionsMonitor<ServiceOptions>>().CurrentValue;
 
         builder.Services
-            .AddOpenApi(options =>
+            .AddOpenApi(oOpenApiOptions =>
             {
                 // Specify the OpenAPI version to use
-                options.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
+                oOpenApiOptions.OpenApiVersion = Microsoft.OpenApi.OpenApiSpecVersion.OpenApi3_0;
             })
             .AddDbContext<DemoContext>(oAddDbContext => oAddDbContext.UseSqlServer(config.Database.ReadConnectionString))
             .AddGraphQLSchema<DemoContext>(oAddGraphQLOptions =>
@@ -63,15 +63,15 @@ public partial class Program
             // .AddTransient<SchemaProvider<DemoContext>>()
 
             .AddControllers() // Option C: Custom controllers
-                .AddJsonOptions(opts =>
+                .AddJsonOptions(oJsonOptions =>
                 {
                     var converter = new JsonStringEnumConverter();
-                    opts.JsonSerializerOptions.Converters.Add(converter); // Use enum field names instead of numbers
-                    opts.JsonSerializerOptions.IncludeFields = true; // EntityGraphQL internally builds types with fields
+                    oJsonOptions.JsonSerializerOptions.Converters.Add(converter); // Use enum field names instead of numbers
+                    oJsonOptions.JsonSerializerOptions.IncludeFields = true; // EntityGraphQL internally builds types with fields
 
                     // The fields internally built already are named with fieldNamer (defaults to camelCase). This is
                     // for the properties on QueryResult (Data, Errors) to match what most tools etc expect (camelCase)
-                    opts.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    oJsonOptions.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 })
         ;
 
@@ -80,7 +80,9 @@ public partial class Program
 
         app.UseRouting();
         app.UseStaticFiles(); // Serve static files (GraphiQL UI)
-        app.MapFallbackToFile("index.html");
+
+        app.MapFallbackToFile("index.html"); // XXX DELETE?
+        // app.UseDefaultFiles(); // TODO?
 
         app.MapGet("/health", () => "Healthy!");
         if (app.Environment.IsDevelopment())
@@ -89,53 +91,54 @@ public partial class Program
         }
 
         // Option A
-        //app.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
-        //{
-        //    // Add EF Core query tags for debugging
-        //    BeforeRootFieldExpressionBuild = (exp, op, field) =>
-        //    {
-        //        if (exp.Type.IsGenericTypeQueryable())
-        //            return Expression.Call(
-        //                typeof(EntityFrameworkQueryableExtensions),
-        //                nameof(EntityFrameworkQueryableExtensions.TagWith),
-        //                [exp.Type.GetGenericArguments()[0]],
-        //                exp,
-        //                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
-        //            );
-        //        return exp;
-        //    },
+        app.MapControllers();
+        app.MapGraphQL<DemoContext>(followSpec: true, options: new ExecutionOptions
+        {
+            // Add EF Core query tags for debugging
+            BeforeRootFieldExpressionBuild = (exp, op, field) =>
+            {
+                if (exp.Type.IsGenericTypeQueryable())
+                    return Expression.Call(
+                        typeof(EntityFrameworkQueryableExtensions),
+                        nameof(EntityFrameworkQueryableExtensions.TagWith),
+                        [exp.Type.GetGenericArguments()[0]],
+                        exp,
+                        Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
+                    );
+                return exp;
+            },
 
-        //    // TODO? master
-        //    // IncludeDebugInfo = true,
+            // TODO? master
+            // IncludeDebugInfo = true,
 
-        //    IncludeQueryInfo = true, // Include query execution metadata
-        //});
+            IncludeQueryInfo = true, // Include query execution metadata
+        });
 
         // Option B
-        app.UseEndpoints(endpoints =>
-        {
-            endpoints.MapControllers();
-            endpoints.MapGraphQL<DemoContext>(
-                options: new ExecutionOptions
-                {
-                    BeforeRootFieldExpressionBuild = (exp, op, field) =>
-                    {
-                        if (exp.Type.IsGenericTypeQueryable())
-                            return Expression.Call(
-                                typeof(EntityFrameworkQueryableExtensions),
-                                nameof(EntityFrameworkQueryableExtensions.TagWith),
-                                [exp.Type.GetGenericArguments()[0]],
-                                exp,
-                                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
-                            );
-                        return exp;
-                    },
-#if DEBUG
-                    // IncludeDebugInfo = true
-#endif
-                }
-            );
-        });
+        //        app.UseEndpoints(endpoints =>
+        //        {
+        //            endpoints.MapControllers();
+        //            endpoints.MapGraphQL<DemoContext>(
+        //                oOpenApiOptions: new ExecutionOptions
+        //                {
+        //                    BeforeRootFieldExpressionBuild = (exp, op, field) =>
+        //                    {
+        //                        if (exp.Type.IsGenericTypeQueryable())
+        //                            return Expression.Call(
+        //                                typeof(EntityFrameworkQueryableExtensions),
+        //                                nameof(EntityFrameworkQueryableExtensions.TagWith),
+        //                                [exp.Type.GetGenericArguments()[0]],
+        //                                exp,
+        //                                Expression.Constant($"GQL op: {op ?? "n/a"}, field: {field}")
+        //                            );
+        //                        return exp;
+        //                    },
+        //#if DEBUG
+        //                    // IncludeDebugInfo = true
+        //#endif
+        //                }
+        //            );
+        //        });
 
         app.Run();
     }
